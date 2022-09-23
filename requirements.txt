@@ -1,2 +1,3 @@
 google-search-results
 dotenv
+pillow

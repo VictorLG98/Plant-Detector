@@ -7,6 +7,8 @@ from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox
 from serpapi import GoogleSearch
+from PIL import ImageTk, Image
+from threading import Thread
 
 load_dotenv()
 
@@ -18,11 +20,17 @@ class PlantClassificatorUI:
         self.window = tkinter.Tk()
         self.window.title("Plant Detector 1.0")
         self.window.resizable(False, False)
-        self.window.config(padx=200, pady=200, background='green')
+        self.window.config(padx=100, pady=100, background='#17ED4F')
 
         self.select_imgs = Button(
-            text="Select plant images", command=self.detect_plant)
-        self.select_imgs.grid(row=0, column=0)
+            text="Choose plant", command=self.threading, font=('Arial', 20, 'bold'), highlightthickness=0, 
+            background='#17ED4F', borderwidth=0, activebackground='#00FA4C', justify=CENTER)
+        self.select_imgs.grid(row=1, column=0, columnspan=2)
+        
+        self.result_label = Label(text="", font=("Helvetica", 12, "bold"), background='#17ED4F')
+        self.result_label.grid(row=2, column=0, columnspan=2)
+        
+        self.label1 = Label()
 
         self.window.mainloop()
 
@@ -36,6 +44,7 @@ class PlantClassificatorUI:
         filenames = fd.askopenfilenames(
             title="Select images", filetypes=filetypes, initialdir="/")
         plant_images = list(filenames)
+            
         if len(plant_images) > 2:
             messagebox.showinfo(
                 title="Atención!", message="Debes seleccionar un máximo de dos imágenes!")
@@ -44,19 +53,27 @@ class PlantClassificatorUI:
 
     def detect_plant(self):
         plants_imgs = self.select_plant_imgs()
+            
         if plants_imgs:
             api_endpoint = f"https://my-api.plantnet.org/v2/identify/all?api-key={self.API_KEY}"
+            
+            image1 = Image.open(plants_imgs[0])
+            image1 = image1.resize((300, 300), Image.ANTIALIAS)
+            test = ImageTk.PhotoImage(image1)
+            self.label1 = tkinter.Label(image=test, borderwidth=0, highlightthickness=0)
+            self.label1.image = test
+            self.label1.grid(row=0, column=0, padx=10)
 
             if len(plants_imgs) == 2:
                 organs = ['flower', 'leaf']
             else:
                 organs = ['leaf']
 
-            images = []
+            images2 = []
             for img in plants_imgs:
                 image_path_1 = img
                 image_data_1 = open(image_path_1, 'rb')
-                images.append(('images', (image_path_1, image_data_1)))
+                images2.append(('images', (image_path_1, image_data_1)))
 
             data = {
                 'organs': organs
@@ -66,7 +83,7 @@ class PlantClassificatorUI:
                 'lang': 'es'
             }
 
-            files = images
+            files = images2
             req = requests.Request('POST', url=api_endpoint,
                                    files=files, data=data, params=params)
 
@@ -82,6 +99,9 @@ class PlantClassificatorUI:
                 json_result = json.loads(response.text)
 
                 bestMatch = json_result.get('bestMatch')
+                result1_accuracy = json_result.get('results')[0].get('score')
+                
+                self.result_label.config(text=f"Best match is '{bestMatch}' with {result1_accuracy} score.")
                 images = self.serpapi_get_google_images(bestMatch.split(" ")[0])
                 remainingRequests = json_result.get(
                     'remainingIdentificationRequests')
@@ -157,6 +177,11 @@ class PlantClassificatorUI:
             print("No se han encontrado imágenes similares...")
         else:
             return image_results[0:5]
+        
+    def threading(self): 
+    
+        t1=Thread(target=self.detect_plant) 
+        t1.start() 
 
 
 if __name__ == "__main__":
