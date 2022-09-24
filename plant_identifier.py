@@ -228,14 +228,14 @@ class PlantClassificatorUI:
     #     else:
     #         return image_results[0:5]
         
-    # def threading(self): 
-    #     self.disable_button()
+    def threading(self): 
+        self.disable_button()
     
-    #     t1=Thread(target=self.detect_plant) 
-    #     t1.start()        
+        t1=Thread(target=self.detect_plant) 
+        t1.start()        
         
-    # def disable_button(self):
-    #     self.select_imgs.config(state=DISABLED, text="Loading...")
+    def disable_button(self):
+        self.select_imgs.config(state=DISABLED, text="Loading...")
 
 
 if __name__ == "__main__":
