@@ -14,7 +14,7 @@ from datetime import datetime
 import wikipedia
 
 load_dotenv()
-wikipedia.set_lang('es')
+wikipedia.set_lang('en')
 
 class PlantClassificatorUI:
 
@@ -104,6 +104,7 @@ class PlantClassificatorUI:
                 print(response.text)
                 messagebox.showerror(
                     message="No se ha identificado ninguna planta... Prueba con otra imagen", title="Error!")
+                self.select_imgs.config(state=ACTIVE, text="Choose plant") 
             else:
                 json_result = json.loads(response.text)
 
